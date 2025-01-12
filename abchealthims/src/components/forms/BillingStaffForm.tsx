@@ -18,7 +18,8 @@ export const BillingStaffForm: React.FC<BillingStaffFormProps> = ({
     role: 'billing_staff',
     status: 'active',
     department: 'Billing',
-    name: ''
+    name: '',
+    user:''
   });
 
   useEffect(() => {
@@ -32,31 +33,29 @@ export const BillingStaffForm: React.FC<BillingStaffFormProps> = ({
     onSubmit(formData);
   };
 
-  const insuranceCompanyOptions = [
-    { value: 'aetna', label: 'Aetna' },
-    { value: 'bluecross', label: 'Blue Cross Blue Shield' },
-    { value: 'cigna', label: 'Cigna' },
-    { value: 'humana', label: 'Humana' },
-    { value: 'medicare', label: 'Medicare' },
-    { value: 'medicaid', label: 'Medicaid' }
-  ];
 
-  const certificationOptions = [
-    { value: 'cpc', label: 'Certified Professional Coder (CPC)' },
-    { value: 'cpb', label: 'Certified Professional Biller (CPB)' },
-    { value: 'crcs', label: 'Certified Revenue Cycle Specialist (CRCS)' },
-    { value: 'cmrs', label: 'Certified Medical Reimbursement Specialist (CMRS)' }
-  ];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Common fields */}
       <div>
+        <label className="block text-sm font-medium text-gray-700">Username</label>
+        <input
+          type="text"
+          value={formData.username}
+          onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          required
+        />
+      </div>
+
+      {/* name */}
+      <div className="mt-4">
         <label className="block text-sm font-medium text-gray-700">Name</label>
         <input
           type="text"
           value={formData.name}
-          onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           required
         />

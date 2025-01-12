@@ -36,12 +36,12 @@ export default function Dashboard() {
   },[dispatch,users])
 
   useEffect(() =>{
-    if((user?.role=="admin"||user?.role=="billing_staff")&&bills==null){
+    if((user?.role=="admin"||user?.role=="billing_staff")&&bills?.length==null){
       dispatch(fetchAllBills())
 
     }
 
-  },[dispatch,bills])
+  },[dispatch,bills,user])
 
   useEffect(()=>{
     if(user?.role=="patient"&&bills?.length==null){

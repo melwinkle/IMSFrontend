@@ -1,9 +1,8 @@
 import React, { useRef, useState } from "react";
-import { X } from "lucide-react";
 import { Modal } from "../Modal";
 import { ImageData } from "../../types/image";
 import { createImage, updateImage } from "../../store/slices/imageSlice";
-import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { useAppDispatch } from "../../store/hooks";
 import { User } from "../../types/user";
 interface ImageUploadModalProps {
   isOpen: boolean;
@@ -45,7 +44,7 @@ export default function ImageUploadModal({
     }
 
     try {
-      // Your API call here
+      //API call here
       if(imageToEdit){
         await dispatch(updateImage({imageId:imageToEdit.id as string,imageData:updatedata}))
         onSuccess(imageToEdit.id as string);

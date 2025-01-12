@@ -13,6 +13,7 @@ export default function Diagnosis() {
   const navigate = useNavigate();
   const isDoctor = user?.role === 'doctor';
   const [searchQuery, setSearchQuery] = useState('');
+  const [showArchived, setShowArchived] = useState(false);
   const {diagnoses}=useAppSelector((state)=>state.diagnosis)
   const diagnosisRef=useRef(false);
   const userRef=useRef(false);
@@ -56,7 +57,8 @@ export default function Diagnosis() {
     const nameMatch = isDoctor 
       ? (patientName && patientName.toLowerCase().includes(searchLower.toLowerCase()))
       : diagnosis.doctor_name?.toLowerCase().includes(searchLower);
-    return dateMatch || nameMatch;
+    const statusMatch = showArchived ? diagnosis.status=="Archive" : diagnosis.status=="Saved";
+    return (dateMatch || nameMatch) && statusMatch;
   })||[];
 
 
@@ -97,6 +99,22 @@ export default function Diagnosis() {
             New Diagnosis
           </button>
         )}
+      </div>
+
+      {/* Tabs for switching between saved and archived diagnoses */}
+      <div className="mb-6">
+        <button
+          onClick={() => setShowArchived(false)}
+          className={`px-4 py-2 rounded-md ${!showArchived ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+        >
+          Saved Diagnoses
+        </button>
+        <button
+          onClick={() => setShowArchived(true)}
+          className={`ml-2 px-4 py-2 rounded-md ${showArchived ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+        >
+          Archived Diagnoses
+        </button>
       </div>
 
       {/* Search Bar */}
@@ -141,8 +159,10 @@ export default function Diagnosis() {
                     </div>
                     <p className="text-gray-600 mb-2">{diagnosis.content}</p>
                     {diagnosis.prescription_image && (
-                      <img src={typeof diagnosis.prescription_image === 'string' ? diagnosis.prescription_image : undefined}/>
-                      
+                      <img 
+                        src={typeof diagnosis.prescription_image === 'string' ? diagnosis.prescription_image : undefined}
+                        className="w-32 h-32 object-cover"
+                      />
                     )}
                   </div>
                 </div>

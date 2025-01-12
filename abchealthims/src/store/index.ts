@@ -10,7 +10,6 @@ export const store = configureStore({
     billing: billReducer,
     image: imageReducer,
     diagnosis: diagnosisReducer,
-    // Add other reducers as needed
   },
 
 });

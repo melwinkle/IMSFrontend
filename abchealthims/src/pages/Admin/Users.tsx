@@ -4,13 +4,9 @@ import { User as UserIcon, Mail, Phone, UserCircle, Search } from 'lucide-react'
 import { AddUserModal } from '../../components/AddUserModal';
 import { User, UserRole, UserStatus } from '../../types/user';
 import Pagination from '../../components/Pagination';
-import { fetchUser, fetchUsers,register,updateProfile } from '../../store/slices/authSlice';
-
-
+import { fetchUser, fetchUsers, register, updateProfile } from '../../store/slices/authSlice';
 
 const tabs: UserRole[] = ['doctor', 'medical_staff', 'radiologist', 'billing_staff'];
-
-
 
 export default function Users() {
   const { user, users } = useAppSelector((state) => state.auth);
@@ -19,6 +15,8 @@ export default function Users() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | undefined>();
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [tempPassword, setTempPassword] = useState<string | null>(null);
   const dispatch = useAppDispatch();
   // useref
   const searchRef = useRef(false);
@@ -45,37 +43,50 @@ export default function Users() {
   };
 
   const handleUserSubmit = async (userData: User) => {
+    setErrorMessage(null);
+    setTempPassword(null);
     if (modalMode === 'add') {
       // Add user logic
       try {
-        await dispatch(register(userData)).unwrap();
+        const response = await dispatch(register(userData)).unwrap();
         console.log('User registered successfully:', userData);
-      } catch (error) {
-        console.error('Failed to register user:', error);
+        setTempPassword(response.temp_password); // Set the temporary password
+        setTimeout(() => {
+          setIsModalOpen(false);
+          dispatch(fetchUsers());
+        }, 8000); // Close the modal after 5 seconds
+      } catch (error: any) {
+        if (error.response?.status === 400) {
+          setErrorMessage(error.response.data?.message || 'Failed to register user');
+        } else {
+          console.error('Failed to register user:', error);
+          setErrorMessage('Failed to register user. Username or email may already exist.');
+        }
       }
     } else {
       // Edit user logic
-
       if (selectedUser) {
         try {
           await dispatch(updateProfile({ userId: selectedUser.id as string, userData })).unwrap();
           console.log('User updated successfully:', userData);
-        } catch (error) {
-          console.error('Failed to update user:', error);
+          setIsModalOpen(false);
+          dispatch(fetchUsers());
+        } catch (error: any) {
+          if (error.response?.status === 400) {
+            setErrorMessage(error.response.data?.message || 'Failed to update user');
+          } else {
+            console.error('Failed to update user:', error);
+          }
         }
       }
-
     }
-    setIsModalOpen(false);
   };
-
-  
 
   const filteredUsers = users?.filter(u => 
     u.role === activeTab && 
     (u?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
      u?.email?.toLowerCase().includes(searchTerm.toLowerCase()))
-  )|| [];
+  ) || [];
 
   // useEffect to fetch user details for filtered users based on active tab
   useEffect(() => {
@@ -84,15 +95,13 @@ export default function Users() {
       const filteredUsers = users?.filter(u => u.role === activeTab) || [];
       
       if (filteredUsers.length > 0) {
-        filteredUsers.forEach((user:any) => {
+        filteredUsers.forEach((user: any) => {
           dispatch(fetchUser(user.id)); // Fetch full information for each user
         });
         userFetchedRef.current[activeTab] = true; // Mark as fetched
       }
     }
   }, [activeTab, users, dispatch]); 
-
-  console.log(filteredUsers)
 
   // pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -174,7 +183,6 @@ export default function Users() {
                     <span className={`ml-2 inline-block px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-600
                   `}>
                       active
-                     
                     </span>
                   </h3>
                   <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -182,7 +190,6 @@ export default function Users() {
                       <Mail className="h-4 w-4 mr-1" />
                       {u.email}
                     </div>
-                   
                   </div>
                 </div>
               </div>
@@ -208,23 +215,27 @@ export default function Users() {
       </div>
 
       <Pagination
-  currentPage={currentPage}
-  totalPages={totalPages}
-  onPageChange={setCurrentPage}
-  itemsPerPage={itemsPerPage}
-  totalItems={totalItems}
-/>
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        itemsPerPage={itemsPerPage}
+        totalItems={totalItems}
+      />
       <AddUserModal 
-      isOpen={isModalOpen}
-      onClose={() => {
-        setIsModalOpen(false);
-        setSelectedUser(undefined);
-      }}
-      role={activeTab}
-      user={selectedUser}
-      mode={modalMode}
-      onSubmit={handleUserSubmit}
-    />
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedUser(undefined);
+          setErrorMessage(null); // Clear error message when modal closes
+          setTempPassword(null); // Clear temporary password when modal closes
+        }}
+        role={activeTab}
+        user={selectedUser}
+        mode={modalMode}
+        onSubmit={handleUserSubmit}
+        errorMessage={errorMessage} // Pass error message to modal
+        tempPassword={tempPassword} // Pass temporary password to modal
+      />
     </div>
   );
 }

@@ -42,6 +42,9 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/login';
+    } else if (error.response?.status === 400) {
+      // Handle 400 errors separately
+      console.error('Bad Request', error.response.data);
     }
     return Promise.reject(error);
   }

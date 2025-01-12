@@ -46,8 +46,9 @@ export default function NewDiagnosis() {
 
     
     try {
-      const response = dispatch(createDiagnosis(formData));
-      if (createDiagnosis.fulfilled.match(response)) {
+      const response = await dispatch(createDiagnosis(formData));
+
+      if (response.meta.requestStatus === 'fulfilled') {
         navigate(`/diagnosis/${response.payload.id}`);
       } else if(createDiagnosis.rejected.match(response)) {
         setError(error);
